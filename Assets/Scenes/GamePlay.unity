@@ -227,7 +227,6 @@ GameObject:
   m_Component:
   - component: {fileID: 318628686}
   - component: {fileID: 318628687}
-  - component: {fileID: 318628688}
   m_Layer: 0
   m_Name: GamePlayManager
   m_TagString: Untagged
@@ -262,25 +261,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e01e00f0883e8b644852f11e02899723, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &318628688
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 318628685}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f60f78b9af7087b45bcd8437971af742, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  squarePrefab: {fileID: 1424888401349753306, guid: 4a9c1ea08fb5eed4ea551ea1fd87b563, type: 3}
-  rows: 5
-  columns: 5
-  startingAreaColor: {r: 0, g: 0, b: 0, a: 0}
-  homeAreaColor: {r: 0, g: 0, b: 0, a: 0}
-  safeZoneColor: {r: 0, g: 0, b: 0, a: 0}
-  regularSquareColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!1 &445875494
 GameObject:
   m_ObjectHideFlags: 0
@@ -372,17 +352,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
-    m_Left: 10
-    m_Right: 10
-    m_Top: 10
-    m_Bottom: 10
-  m_ChildAlignment: 0
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
+  m_ChildAlignment: 4
   m_StartCorner: 0
   m_StartAxis: 0
-  m_CellSize: {x: 50, y: 50}
+  m_CellSize: {x: 40, y: 40}
   m_Spacing: {x: 0, y: 0}
-  m_Constraint: 0
-  m_ConstraintCount: 2
+  m_Constraint: 2
+  m_ConstraintCount: 11
 --- !u!114 &445875499
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -392,16 +372,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 445875494}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f60f78b9af7087b45bcd8437971af742, type: 3}
+  m_Script: {fileID: 11500000, guid: 5ddee22d76308a54e8f23f2f44ec3d8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  squarePrefab: {fileID: 1424888401349753306, guid: 4a9c1ea08fb5eed4ea551ea1fd87b563, type: 3}
-  rows: 5
-  columns: 5
-  startingAreaColor: {r: 0, g: 0, b: 0, a: 0}
-  homeAreaColor: {r: 0, g: 0, b: 0, a: 0}
-  safeZoneColor: {r: 0, g: 0, b: 0, a: 0}
-  regularSquareColor: {r: 0, g: 0, b: 0, a: 0}
+  numRows: 11
+  numColumns: 11
+  boardWidth: 10
+  boardHeight: 10
+  gridCellPrefab: {fileID: 7533232756215733889, guid: 9acec10472f28454380550dd96e2ee5c, type: 3}
+  gridContainer: {fileID: 445875495}
+  redColor: {r: 1, g: 0, b: 0, a: 1}
+  greenColor: {r: 0, g: 1, b: 0, a: 1}
+  blueColor: {r: 0, g: 0, b: 1, a: 1}
+  yellowColor: {r: 1, g: 1, b: 0, a: 1}
 --- !u!1 &672057590
 GameObject:
   m_ObjectHideFlags: 0
