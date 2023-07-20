@@ -97,7 +97,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
                     gridCell = gridManager.GetRandomGridCellInBlock(gridManager.greenBlock);
                     break;
                 case "YellowBlock":
-                    gridCell = gridManager.GetRandomGridCellInBlock(gridManager.yellowBlock);
+                    gridCell = gridManager.GetRandomGridCellInBlock(gridManager.yellowRows);
                     break;
                 default:
                     Debug.LogError("Invalid assignedBlockName: " + assignedBlockName);
