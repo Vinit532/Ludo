@@ -5,6 +5,8 @@ public class GridCell : MonoBehaviour
 {
     private Image cellImage;
 
+    public static float cellWidth;
+    public static float cellHeight;
     private void Awake()
     {
         cellImage = GetComponent<Image>();

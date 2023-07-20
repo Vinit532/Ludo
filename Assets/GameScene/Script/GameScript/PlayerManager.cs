@@ -1,69 +1,114 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
-using Photon.Realtime;
-using System.Linq;
-using System.IO;
-using Hashtable = ExitGames.Client.Photon.Hashtable;
 
-public class PlayerManager : MonoBehaviour
+public class PlayerManager : MonoBehaviourPunCallbacks
 {
-	PhotonView PV;
+    private static Dictionary<int, bool> playerInstantiated = new Dictionary<int, bool>();
 
-	GameObject controller;
+    public GameObject tokenPrefab; // Token prefab assigned in the Inspector
+    public string assignedBlockName; // Assign the block name (e.g., "RedBlock", "BlueBlock", "GreenBlock", "YellowBlock") in the Inspector
 
-	int kills;
-	int deaths;
+    void Start()
+    {
+        if (photonView.IsMine)
+        {
+            int playerCount = PhotonNetwork.CurrentRoom.PlayerCount;
+            int playerIndex = photonView.Owner.ActorNumber - 1;
 
-	void Awake()
-	{
-		PV = GetComponent<PhotonView>();
-	}
+            // Check if the player has already been instantiated
+            if (!playerInstantiated.ContainsKey(playerIndex))
+            {
+                playerInstantiated.Add(playerIndex, true);
 
-	void Start()
-	{
-		if (PV.IsMine)
-		{
-			CreateController();
-		}
-	}
+                // Instantiate the tokenPrefab for the player
+                for (int i = 0; i < 4; i++)
+                {
+                    Vector3 spawnPosition = GetSpawnPosition(i);
+                    GameObject instance = PhotonNetwork.Instantiate(tokenPrefab.name, spawnPosition, Quaternion.identity, 0);
+                    SetInstanceParent(instance);
+                }
+            }
+        }
+    }
 
-	void CreateController()
-	{
-		Transform spawnpoint = SpawnManager.Instance.GetSpawnpoint();
-		controller = PhotonNetwork.Instantiate(Path.Combine("PhotonPrefabs", "PlayerController"), spawnpoint.position, spawnpoint.rotation, 0, new object[] { PV.ViewID });
-	}
+    Vector3 GetSpawnPosition(int index)
+    {
+        Vector3 spawnPosition = Vector3.zero;
 
-	public void Die()
-	{
-		PhotonNetwork.Destroy(controller);
-		CreateController();
+        // Get the GridManager instance
+        GridManager gridManager = GridManager.Instance;
 
-		deaths++;
+        // Check if the assignedBlockName matches one of the block names in the GridManager
+        if (gridManager && !string.IsNullOrEmpty(assignedBlockName))
+        {
+            // Get the corresponding 2D array based on the assignedBlockName
+            int[,] blockArray = null;
+            switch (assignedBlockName)
+            {
+                case "RedBlock":
+                    blockArray = gridManager.redRows;
+                    break;
+                case "BlueBlock":
+                    blockArray = gridManager.blueRows;
+                    break;
+                case "GreenBlock":
+                    blockArray = gridManager.greenRows;
+                    break;
+                case "YellowBlock":
+                    blockArray = gridManager.yellowRows;
+                    break;
+                default:
+                    Debug.LogError("Invalid assignedBlockName: " + assignedBlockName);
+                    break;
+            }
 
-		Hashtable hash = new Hashtable();
-		hash.Add("deaths", deaths);
-		PhotonNetwork.LocalPlayer.SetCustomProperties(hash);
-	}
+            // Check if the index is valid for the blockArray
+            if (blockArray != null && index >= 0 && index < blockArray.GetLength(0))
+            {
+                int row = blockArray[index, 0];
+                int column = blockArray[index, 1];
+                spawnPosition = gridManager.GetCellPosition(row, column);
+            }
+        }
 
-	public void GetKill()
-	{
-		PV.RPC(nameof(RPC_GetKill), PV.Owner);
-	}
+        return spawnPosition;
+    }
 
-	[PunRPC]
-	void RPC_GetKill()
-	{
-		kills++;
+    void SetInstanceParent(GameObject instance)
+    {
+        // Get the GridManager instance
+        GridManager gridManager = GridManager.Instance;
 
-		Hashtable hash = new Hashtable();
-		hash.Add("kills", kills);
-		PhotonNetwork.LocalPlayer.SetCustomProperties(hash);
-	}
+        // Check if the assignedBlockName matches one of the block names in the GridManager
+        if (gridManager && !string.IsNullOrEmpty(assignedBlockName))
+        {
+            // Find the corresponding grid cell based on the assignedBlockName
+            GridCell gridCell = null;
+            switch (assignedBlockName)
+            {
+                case "RedBlock":
+                    gridCell = gridManager.GetRandomGridCellInBlock(gridManager.redBlock);
+                    break;
+                case "BlueBlock":
+                    gridCell = gridManager.GetRandomGridCellInBlock(gridManager.blueBlock);
+                    break;
+                case "GreenBlock":
+                    gridCell = gridManager.GetRandomGridCellInBlock(gridManager.greenBlock);
+                    break;
+                case "YellowBlock":
+                    gridCell = gridManager.GetRandomGridCellInBlock(gridManager.yellowBlock);
+                    break;
+                default:
+                    Debug.LogError("Invalid assignedBlockName: " + assignedBlockName);
+                    break;
+            }
 
-	public static PlayerManager Find(Player player)
-	{
-		return FindObjectsOfType<PlayerManager>().SingleOrDefault(x => x.PV.Owner == player);
-	}
+            // Set the instance as a child of the grid cell
+            if (gridCell)
+            {
+                instance.transform.SetParent(gridCell.transform);
+            }
+        }
+    }
 }
