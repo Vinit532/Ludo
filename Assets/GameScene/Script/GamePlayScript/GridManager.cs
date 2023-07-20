@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,6 +15,9 @@ public class GridManager : MonoBehaviour
     public Color blueColor;
     public Color yellowColor;
     public static GridManager Instance { get; private set; }
+
+    // Store the grid cells for each block
+
 
     private void Awake()
     {
@@ -152,5 +156,18 @@ public class GridManager : MonoBehaviour
                 Debug.LogWarning("Invalid block name: " + blockName);
                 return null;
         }
+    }
+
+    public GridCell GetGridCell(int row, int column)
+    {
+        string cellName = "Cell[" + row + "," + column + "]";
+        Transform cellTransform = gridContainer.Find(cellName);
+
+        if (cellTransform != null)
+        {
+            return cellTransform.GetComponent<GridCell>();
+        }
+
+        return null;
     }
 }

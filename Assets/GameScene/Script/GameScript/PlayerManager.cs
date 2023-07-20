@@ -26,7 +26,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
                 {
                     Vector3 spawnPosition = GetSpawnPosition(i);
                     GameObject instance = PhotonNetwork.Instantiate(tokenPrefab.name, spawnPosition, Quaternion.identity, 0);
-                    SetInstanceParent(instance);
+                    photonView.RPC("SetInstanceParent", RpcTarget.AllBuffered, instance.GetPhotonView().ViewID, i);
                 }
             }
         }
@@ -43,25 +43,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
         if (gridManager && !string.IsNullOrEmpty(assignedBlockName))
         {
             // Get the corresponding 2D array based on the assignedBlockName
-            int[,] blockArray = null;
-            switch (assignedBlockName)
-            {
-                case "RedBlock":
-                    blockArray = gridManager.redRows;
-                    break;
-                case "BlueBlock":
-                    blockArray = gridManager.blueRows;
-                    break;
-                case "GreenBlock":
-                    blockArray = gridManager.greenRows;
-                    break;
-                case "YellowBlock":
-                    blockArray = gridManager.yellowRows;
-                    break;
-                default:
-                    Debug.LogError("Invalid assignedBlockName: " + assignedBlockName);
-                    break;
-            }
+            int[,] blockArray = gridManager.GetBlockArray(assignedBlockName);
 
             // Check if the index is valid for the blockArray
             if (blockArray != null && index >= 0 && index < blockArray.GetLength(0))
@@ -75,39 +57,34 @@ public class PlayerManager : MonoBehaviourPunCallbacks
         return spawnPosition;
     }
 
-    void SetInstanceParent(GameObject instance)
+    [PunRPC]
+    void SetInstanceParent(int instanceViewID, int index)
     {
-        // Get the GridManager instance
-        GridManager gridManager = GridManager.Instance;
-
-        // Check if the assignedBlockName matches one of the block names in the GridManager
-        if (gridManager && !string.IsNullOrEmpty(assignedBlockName))
+        GameObject instance = PhotonView.Find(instanceViewID).gameObject;
+        if (instance != null)
         {
-            // Find the corresponding grid cell based on the assignedBlockName
-            GridCell gridCell = null;
-            switch (assignedBlockName)
-            {
-                case "RedBlock":
-                    gridCell = gridManager.GetRandomGridCellInBlock(gridManager.redBlock);
-                    break;
-                case "BlueBlock":
-                    gridCell = gridManager.GetRandomGridCellInBlock(gridManager.blueBlock);
-                    break;
-                case "GreenBlock":
-                    gridCell = gridManager.GetRandomGridCellInBlock(gridManager.greenBlock);
-                    break;
-                case "YellowBlock":
-                    gridCell = gridManager.GetRandomGridCellInBlock(gridManager.yellowRows);
-                    break;
-                default:
-                    Debug.LogError("Invalid assignedBlockName: " + assignedBlockName);
-                    break;
-            }
+            // Get the GridManager instance
+            GridManager gridManager = GridManager.Instance;
 
-            // Set the instance as a child of the grid cell
-            if (gridCell)
+            // Check if the assignedBlockName matches one of the block names in the GridManager
+            if (gridManager && !string.IsNullOrEmpty(assignedBlockName))
             {
-                instance.transform.SetParent(gridCell.transform);
+                // Get the corresponding 2D array based on the assignedBlockName
+                int[,] blockArray = gridManager.GetBlockArray(assignedBlockName);
+
+                // Check if the index is valid for the blockArray
+                if (blockArray != null && index >= 0 && index < blockArray.GetLength(0))
+                {
+                    int row = blockArray[index, 0];
+                    int column = blockArray[index, 1];
+                    GridCell gridCell = gridManager.GetGridCell(row, column);
+
+                    // Set the instance as a child of the grid cell
+                    if (gridCell)
+                    {
+                        instance.transform.SetParent(gridCell.transform);
+                    }
+                }
             }
         }
     }
