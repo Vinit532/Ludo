@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 2198725773058126489}
   - component: {fileID: 2822073313259800402}
   - component: {fileID: 600919973689572659}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: YellowPawns
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -40,7 +40,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 30, y: 30}
+  m_SizeDelta: {x: 25, y: 25}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6463344756723432581
 CanvasRenderer:

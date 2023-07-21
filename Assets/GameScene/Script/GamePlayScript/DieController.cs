@@ -1,24 +1,47 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-public class DieController : MonoBehaviour
+public class DieController : MonoBehaviour, IPointerClickHandler
 {
-    private Rigidbody rb;
+    public GameObject dieNumberPrefab;
+    private List<GameObject> generatedInstances = new List<GameObject>();
 
-    private void Start()
+    public void OnPointerClick(PointerEventData eventData)
     {
-        rb = GetComponent<Rigidbody>();
+        if (eventData.pointerPress == gameObject)
+        {
+            GenerateDieNumbers();
+        }
     }
 
-    public void Roll()
+    private void GenerateDieNumbers()
     {
-        // Generate a random rotation for the die
-        Quaternion randomRotation = Random.rotation;
+        // Clear previously generated instances
+        ClearGeneratedInstances();
 
-        // Apply the rotation to the die
-        rb.rotation = randomRotation;
+        // Generate a random number between 1 and 6
+        int randomNumber = Random.Range(1, 7);
+        Debug.Log("Generated Number: " + randomNumber);
 
-        // Add a force to the die to simulate rolling
-        Vector3 rollForce = randomRotation * Vector3.forward * 10f;
-        rb.AddForce(rollForce, ForceMode.Impulse);
+        // Create instances of the dieNumberPrefab based on the generated number
+        for (int i = 0; i < randomNumber; i++)
+        {
+            Vector3 spawnPosition = new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0);
+            GameObject instance = Instantiate(dieNumberPrefab, transform.position + spawnPosition, Quaternion.identity, transform);
+            instance.name = "DieNumber_" + i;
+            generatedInstances.Add(instance);
+        }
+
+        Debug.Log("Number of Instances Created: " + randomNumber);
+    }
+
+    private void ClearGeneratedInstances()
+    {
+        foreach (var instance in generatedInstances)
+        {
+            Destroy(instance);
+        }
+        generatedInstances.Clear();
     }
 }
