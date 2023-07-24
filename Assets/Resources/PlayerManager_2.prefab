@@ -47,6 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tokenPrefab: {fileID: 3184031258872233319, guid: 8311a4d5d7e18b845a5886d10b8190b2, type: 3}
   assignedBlockName: GreenBlock
+  currentPlayerIndex: 0
 --- !u!114 &2511191531386143615
 MonoBehaviour:
   m_ObjectHideFlags: 0

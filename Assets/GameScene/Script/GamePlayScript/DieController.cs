@@ -1,17 +1,22 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
+using Photon.Pun;
 
-public class DieController : MonoBehaviour, IPointerClickHandler
+public class DieController : MonoBehaviourPunCallbacks
 {
     public GameObject dieNumberPrefab;
     private List<GameObject> generatedInstances = new List<GameObject>();
 
-    public void OnPointerClick(PointerEventData eventData)
+    void Update()
     {
-        if (eventData.pointerPress == gameObject)
+        if (photonView.IsMine && TurnManager.Instance.IsPlayerTurn())
         {
-            GenerateDieNumbers();
+            if (Input.GetMouseButtonDown(0))
+            {
+                // Generate die numbers and notify the turn manager
+                GenerateDieNumbers();
+                photonView.RPC("NextTurn", RpcTarget.AllBuffered, PhotonNetwork.LocalPlayer.ActorNumber);
+            }
         }
     }
 
@@ -27,9 +32,9 @@ public class DieController : MonoBehaviour, IPointerClickHandler
         // Create instances of the dieNumberPrefab based on the generated number
         for (int i = 0; i < randomNumber; i++)
         {
+            // Use the Die object as the parent transform and set the local position
             Vector3 spawnPosition = new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0);
-            GameObject instance = Instantiate(dieNumberPrefab, transform.position + spawnPosition, Quaternion.identity, transform);
-            instance.name = "DieNumber_" + i;
+            GameObject instance = PhotonNetwork.Instantiate(dieNumberPrefab.name, transform.position + spawnPosition, Quaternion.identity);
             generatedInstances.Add(instance);
         }
 
@@ -40,8 +45,22 @@ public class DieController : MonoBehaviour, IPointerClickHandler
     {
         foreach (var instance in generatedInstances)
         {
-            Destroy(instance);
+            PhotonNetwork.Destroy(instance);
         }
         generatedInstances.Clear();
+    }
+
+    [PunRPC]
+    public void NextTurn(int playerActorNumber)
+    {
+        // Check if it's the local player's turn based on the player's actor number
+        bool isLocalPlayerTurn = photonView.Owner.ActorNumber == playerActorNumber;
+
+        // Notify the player manager to set the player's turn
+        PlayerManager playerManager = GetComponent<PlayerManager>();
+        if (playerManager != null)
+        {
+            playerManager.SetPlayerTurn(isLocalPlayerTurn);
+        }
     }
 }
