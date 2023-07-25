@@ -16,6 +16,10 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
     private bool isLocalPlayerTurn = false;
 
+    public int ActorNumber => photonView.Owner.ActorNumber;
+    public string NickName => photonView.Owner.NickName;
+
+
     private void Start()
     {
         if (photonView.IsMine)
@@ -36,8 +40,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
                 if (playerIndex == 0)
                 {
-                    // Set the turn for the first player who joined the room
-                    SetPlayerTurn(true);
+                    SetNextPlayerTurn();
                 }
             }
         }
@@ -54,24 +57,29 @@ public class PlayerManager : MonoBehaviourPunCallbacks
         // Get the next player in the turn rotation
         Player nextPlayer = PhotonNetwork.PlayerList[currentPlayerIndex];
         // Set the turn for the next player
-        SetPlayerTurn(nextPlayer.ActorNumber == PhotonNetwork.LocalPlayer.ActorNumber);
+        SetCurrentPlayerTurn(nextPlayer.NickName, nextPlayer.ActorNumber == PhotonNetwork.LocalPlayer.ActorNumber);
     }
 
-    [PunRPC]
     public void SetPlayerTurn(bool isTurn)
     {
-        isLocalPlayerTurn = isTurn;
+        canClick = isTurn;
 
-        if (isLocalPlayerTurn)
+        if (canClick)
         {
-            Debug.Log("It's your turn now!");
+            Debug.Log("It's your turn now! Player: " + photonView.Owner.NickName);
         }
         else
         {
-            Debug.Log("It's not your turn.");
+            Debug.Log("It's not your turn. Player: " + photonView.Owner.NickName);
         }
     }
 
+
+    [PunRPC]
+    public void SetCurrentPlayerTurn(string playerName, bool isTurn)
+    {
+        SetPlayerTurn(isTurn);
+    }
     [PunRPC]
     public void SetLocalPlayerCanClick(bool canClick)
     {
@@ -86,16 +94,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks
     [PunRPC]
     public void NextTurn(int playerIndex)
     {
-        canClick = photonView.IsMine && playerIndex == (photonView.Owner.ActorNumber - 1);
-
-        if (canClick)
-        {
-            Debug.Log("It's your turn now!");
-        }
-        else
-        {
-            Debug.Log("It's not your turn.");
-        }
+        SetNextPlayerTurn();
     }
 
     Vector3 GetSpawnPosition(int index)
@@ -147,28 +146,13 @@ public class PlayerManager : MonoBehaviourPunCallbacks
 
     public void RollDice()
     {
-        // Check if it's the player's turn
-        if (TurnManager.Instance.IsPlayerTurn())
+        if (canClick && photonView.IsMine)
         {
-            int rollResult = Random.Range(1, 7);
-            Debug.Log("Rolled: " + rollResult + ", Creating " + rollResult + " instances.");
-
-            foreach (GameObject token in tokens)
-            {
-                PhotonNetwork.Destroy(token);
-            }
-
-            tokens.Clear();
-
-            for (int i = 0; i < rollResult; i++)
-            {
-                Vector3 spawnPosition = GetSpawnPosition(i);
-                GameObject instance = PhotonNetwork.Instantiate(tokenPrefab.name, spawnPosition, Quaternion.identity, 0);
-                tokens.Add(instance);
-            }
+            // Do the dice rolling logic here
+            // ...
 
             // Notify the DieController to start the next turn (call RPC on all clients)
-            photonView.RPC("NextTurn", RpcTarget.AllBuffered);
+            photonView.RPC("NextTurn", RpcTarget.AllBuffered, PhotonNetwork.LocalPlayer.ActorNumber);
         }
     }
 }

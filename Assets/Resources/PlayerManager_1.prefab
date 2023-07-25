@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2511191531386143613}
   - component: {fileID: 2511191531386143614}
   - component: {fileID: 2511191531386143615}
+  - component: {fileID: -364521940676120799}
   m_Layer: 0
   m_Name: PlayerManager_1
   m_TagString: Untagged
@@ -47,7 +48,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tokenPrefab: {fileID: 5554550724726107430, guid: 34eb14918d68a0141af2160221ee7e86, type: 3}
   assignedBlockName: BlueBlock
-  currentPlayerIndex: 0
+  currentPlayerIndex: 1
 --- !u!114 &2511191531386143615
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -63,10 +64,23 @@ MonoBehaviour:
   ObservedComponentsFoldoutOpen: 1
   Group: 0
   prefixField: -1
-  Synchronization: 3
-  OwnershipTransfer: 0
+  Synchronization: 2
+  OwnershipTransfer: 1
   observableSearch: 2
   ObservedComponents: []
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
+--- !u!114 &-364521940676120799
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2511191531386143612}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 989d358530b4c5044b0ccbb566d47a50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dieNumberPrefab: {fileID: 2893492256450382386, guid: b06898515b5f93d44a2efde6cc35d173, type: 3}

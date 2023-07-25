@@ -6,18 +6,23 @@ public class DieController : MonoBehaviourPunCallbacks
 {
     public GameObject dieNumberPrefab;
     private List<GameObject> generatedInstances = new List<GameObject>();
+    private bool canClick = true;
 
+  
     void Update()
     {
-        if (photonView.IsMine && TurnManager.Instance.IsPlayerTurn())
+        if (canClick && Input.GetMouseButtonDown(0))
         {
-            if (Input.GetMouseButtonDown(0))
-            {
-                // Generate die numbers and notify the turn manager
-                GenerateDieNumbers();
-                photonView.RPC("NextTurn", RpcTarget.AllBuffered, PhotonNetwork.LocalPlayer.ActorNumber);
-            }
+            Debug.Log("Die Clicked!");
+            GenerateDieNumbers();
+            photonView.RPC("NextTurn", RpcTarget.AllBuffered, PhotonNetwork.LocalPlayer.ActorNumber);
         }
+    }
+
+    [PunRPC]
+    public void SetCanClick(bool value)
+    {
+        canClick = value;
     }
 
     private void GenerateDieNumbers()
@@ -35,6 +40,7 @@ public class DieController : MonoBehaviourPunCallbacks
             // Use the Die object as the parent transform and set the local position
             Vector3 spawnPosition = new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0);
             GameObject instance = PhotonNetwork.Instantiate(dieNumberPrefab.name, transform.position + spawnPosition, Quaternion.identity);
+            instance.transform.SetParent(transform); // Set the Die object as the parent
             generatedInstances.Add(instance);
         }
 
@@ -57,7 +63,7 @@ public class DieController : MonoBehaviourPunCallbacks
         bool isLocalPlayerTurn = photonView.Owner.ActorNumber == playerActorNumber;
 
         // Notify the player manager to set the player's turn
-        PlayerManager playerManager = GetComponent<PlayerManager>();
+        PlayerManager playerManager = GetComponentInParent<PlayerManager>();
         if (playerManager != null)
         {
             playerManager.SetPlayerTurn(isLocalPlayerTurn);

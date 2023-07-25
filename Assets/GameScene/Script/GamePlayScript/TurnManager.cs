@@ -1,63 +1,76 @@
-using System.Collections;
-using Photon.Pun;
+using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
+using Photon.Realtime;
 
-public class TurnManager : MonoBehaviourPun
+public class TurnManager : MonoBehaviourPunCallbacks
 {
-    public static TurnManager Instance { get; private set; }
+    public static TurnManager Instance;
 
     private int currentPlayerIndex = 0;
-    private PlayerManager[] players;
+    private List<Player> players = new List<Player>();
 
     private void Awake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-        }
-        else
+        if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
         }
     }
 
     private void Start()
     {
-        players = FindObjectsOfType<PlayerManager>();
-        StartNextTurn();
+        // Add all players in the room to the players list
+        foreach (var player in PhotonNetwork.PlayerList)
+        {
+            players.Add(player);
+        }
     }
 
     public bool IsPlayerTurn()
     {
-        if (photonView.IsMine && players != null && currentPlayerIndex >= 0 && currentPlayerIndex < players.Length)
+        if (players.Count == 0)
         {
-            return players[currentPlayerIndex].photonView.IsMine;
+            return false;
+        }
+
+        // Get the current player
+        Player currentPlayer = players[currentPlayerIndex];
+
+        if (PhotonNetwork.IsConnected)
+        {
+            if (currentPlayer.ActorNumber == PhotonNetwork.LocalPlayer.ActorNumber)
+            {
+                return true;
+            }
         }
 
         return false;
     }
 
-    public void StartNextTurn()
+    [PunRPC]
+    public void NextTurn()
     {
-        StartCoroutine(NextTurnDelay());
-    }
-
-    private IEnumerator NextTurnDelay()
-    {
-        yield return new WaitForSeconds(1f); // Add a small delay to prevent instant re-rolls
-
-        // Go to the next player's turn
+        // Increment the current player index to move to the next player
         currentPlayerIndex++;
-        if (currentPlayerIndex >= players.Length)
+        if (currentPlayerIndex >= players.Count)
         {
             currentPlayerIndex = 0;
         }
 
-        // Call RollDice for the current player
-        if (IsPlayerTurn())
+        // Notify all players about the current player's turn
+        Player currentPlayer = players[currentPlayerIndex];
+        photonView.RPC("SetCurrentPlayerTurn", RpcTarget.All, currentPlayer.NickName, currentPlayer.ActorNumber == PhotonNetwork.LocalPlayer.ActorNumber);
+    }
+
+    [PunRPC]
+    private void SetCurrentPlayerTurn(string playerName, bool isTurn)
+    {
+        // Update the player turns for all players in the scene
+        PlayerManager[] playerManagers = FindObjectsOfType<PlayerManager>();
+        foreach (PlayerManager playerManager in playerManagers)
         {
-            players[currentPlayerIndex].RollDice();
+            playerManager.SetPlayerTurn(isTurn);
         }
     }
 }
